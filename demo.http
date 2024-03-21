@@ -1,0 +1,9 @@
+### 访问demo
+POST http://localhost:8080/
+Content-Type: application/json
+
+{
+  "service": "DemoServiceImpl",
+  "method_sign": "hello",
+  "args": "aaa"
+}
