@@ -1,8 +1,8 @@
 [workspace]
-members = ["syx-rpc-rust-core", "syx-rpc-rust-demo-api", "syx-rpc-rust-demo-provider"]
+members = ["syx-rpc-rust-core", "syx-rpc-rust-demo-api", "syx-rpc-rust-demo-consumer", "syx-rpc-rust-demo-provider", "syx-rpc-rust-macro"]
+resolver = "2"
 
 [workspace.package]
-name = "syx-rpc-rust"
 version = "1.0.0"
 authors = ["syx <haydnsyx@163.com>"]
 edition = "2021"
@@ -11,5 +11,6 @@ description = "easy rpc framework"
 
 [workspace.dependencies]
 syx-rpc-rust-core = {path = "syx-rpc-rust-core", version = "1.0.0"}
+syx-rpc-rust-macro = {path = "syx-rpc-rust-macro", version = "1.0.0"}
 syx-rpc-rust-demo-api = {path = "syx-rpc-rust-demo-api", version = "1.0.0"}
 syx-rpc-rust-demo-provider = { path = "syx-rpc-rust-demo-provider", version = "1.0.0" }
