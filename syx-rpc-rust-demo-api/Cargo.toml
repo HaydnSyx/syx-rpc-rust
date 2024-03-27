@@ -7,3 +7,4 @@ license.workspace = true
 description.workspace = true
 
 [dependencies]
+syx-rpc-rust-macro.workspace = true

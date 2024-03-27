@@ -7,3 +7,6 @@ Content-Type: application/json
   "method_sign": "hello",
   "args": "aaa"
 }
+
+### 访问demo
+GET http://localhost:7777/hello/syx

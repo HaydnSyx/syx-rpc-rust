@@ -12,20 +12,7 @@ mod provider;
 
 #[post("/")]
 async fn invoker(req: web::Json<RpcRequest>) -> actix_web::Result<web::Json<RpcResponse<String>>> {
-    let service = &req.service;
-    let method_sign = &req.method_sign;
-    let param = &req.args;
-    // 根据服务名称获取到对应的服务
-    let result = invoke_service(service, |service| service.invoke(method_sign, param)).unwrap();
-
-    // let server = get_service(service).unwrap();
-    // let result = server.invoke(method_sign, param);
-
-    let response = RpcResponse {
-        code: 0,
-        msg: String::from("success"),
-        data: result,
-    };
+    let response = invoke_service(&req);
     Ok::<web::Json<RpcResponse<String>>, actix_web::Error>(web::Json(response))
 }
 

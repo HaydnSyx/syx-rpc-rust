@@ -11,6 +11,7 @@ syx-rpc-rust-core.workspace = true
 syx-rpc-rust-macro.workspace = true
 syx-rpc-rust-demo-api.workspace = true
 
-reqwest = { version = "0.12.2", features = ["json"] }
+
 tokio = { version = "1", features = ["full"] }
 serde_json = "1.0.114"
+actix-web = "4.5.1"
