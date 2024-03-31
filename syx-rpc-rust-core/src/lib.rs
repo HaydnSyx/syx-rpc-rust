@@ -6,14 +6,14 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use reqwest::Client;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct RpcRequest {
     pub service: String,
     pub method_sign: String,
     pub args: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct RpcResponse<T: Serialize> {
     pub code: i32,
     pub msg: String,
@@ -22,7 +22,7 @@ pub struct RpcResponse<T: Serialize> {
 
 // 通用服务暴露接口
 pub trait RpcService: Send + Sync {
-    fn invoke(&self, method_sign: &str, args: &str) -> String;
+    fn invoke(&self, method_sign: &str, args: String) -> String;
 }
 
 // ====================provider相关实现====================
@@ -42,9 +42,10 @@ pub fn add_service(name: &str, service: Box<dyn RpcService>) {
 }
 
 pub fn invoke_service(req: &RpcRequest) -> RpcResponse<String> {
+    let request = req.clone();
     let name = &req.service;
     let method_sign = &req.method_sign;
-    let param = &req.args;
+    let param = request.args;
     let map = PROVIDERS.lock().unwrap();
     let result = map.get(name).map(|service| service.invoke(method_sign, param)).unwrap();
 
@@ -62,7 +63,7 @@ pub fn invoke_service(req: &RpcRequest) -> RpcResponse<String> {
 
 pub async fn invoke_provider(request: &RpcRequest) -> String {
     let client = Client::new();
-    let res = match client.post("http://localhost:8080/")
+    let res = match client.post("http://localhost:8888/")
         .json(&json!(&request))
         .send()
         .await {

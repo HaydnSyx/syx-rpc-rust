@@ -27,7 +27,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(invoker)
     })
-        .bind(("localhost", 8080))?
+        .bind(("localhost", 8888))?
         .run()
         .await
 }

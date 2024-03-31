@@ -4,7 +4,7 @@ use proc_macro::TokenStream;
 use std::collections::HashMap;
 
 use quote::quote;
-use syn::{FnArg, ImplItem, ItemImpl, ItemTrait, parse_macro_input, ReturnType, TraitItem};
+use syn::{ImplItem, ItemImpl, ItemTrait, parse_macro_input, ReturnType, TraitItem};
 
 #[proc_macro_attribute]
 pub fn syx_provider(_attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -68,7 +68,7 @@ pub fn syx_provider(_attr: TokenStream, item: TokenStream) -> TokenStream {
         #original_impl
 
         impl RpcService for #struct_name {
-            fn invoke(&self, method_sign: &str, args: &str) -> String {
+            fn invoke(&self, method_sign: &str, args: String) -> String {
                 #(#methods)*
                 panic!("not find method")
             }
@@ -122,11 +122,11 @@ pub fn rpc_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
         });*/
         println!("generate method, ident: {}", ident.to_string());
         let proxy_fn = quote! {
-                pub fn #ident (#inputs) -> String {
+                async fn #ident (#inputs) -> String {
                     let request = syx_rpc_rust_core::RpcRequest {
-                        service: #provider,
+                        service: #provider.to_string(),
                         method_sign: stringify!(#ident).to_string(),
-                        args: "syx",
+                        args: "syx".to_string(),
                     };
 
                     let res :String = syx_rpc_rust_core::invoke_provider(&request).await;

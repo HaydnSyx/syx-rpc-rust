@@ -5,22 +5,15 @@ use actix_web::{App, get, HttpServer, web};
 use syx_rpc_rust_core::RpcRequest;
 use syx_rpc_rust_macro::rpc_trait;
 
-#[rpc_trait(provider="DemoServer")]
+#[rpc_trait(provider="DemoServiceImpl")]
 pub trait DemoServerConsumer {
-    fn hello(&self, name: String) -> String;
+    async fn hello(&self, name: String) -> String;
 }
 
 #[get("/hello/{name}")]
-// #[tokio::main]
 async fn invoker_hello(name: web::Path<String>) -> actix_web::Result<web::Json<String>> {
-   /* let request = RpcRequest {
-        service: String::from("DemoServiceImpl"),
-        method_sign: String::from("hello"),
-        args: name.to_string(),
-    };
-    let res = syx_rpc_rust_core::invoke_provider(&request).await;*/
-    let rpc = DemoServerConsumerRpc::new();
-    let res = rpc.hello(name.to_string());
+    let rpc = DemoServerConsumerRpc {};
+    let res = rpc.hello(name.to_string()).await;
     Ok::<web::Json<String>, actix_web::Error>(web::Json(res))
 }
 
