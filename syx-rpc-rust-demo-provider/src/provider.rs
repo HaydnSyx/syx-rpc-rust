@@ -6,7 +6,7 @@ pub struct DemoServiceImpl {}
 
 #[syx_provider]
 impl DemoServer for DemoServiceImpl {
-    fn hello(&self, name: String) -> String {
+    async fn hello(&self, name: String) -> String {
         format!("hello, {}", name)
     }
 }

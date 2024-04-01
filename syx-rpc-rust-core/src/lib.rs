@@ -10,7 +10,7 @@ use reqwest::Client;
 pub struct RpcRequest {
     pub service: String,
     pub method_sign: String,
-    pub args: String,
+    pub args: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -21,8 +21,9 @@ pub struct RpcResponse<T: Serialize> {
 }
 
 // 通用服务暴露接口
+#[async_trait::async_trait]
 pub trait RpcService: Send + Sync {
-    fn invoke(&self, method_sign: &str, args: String) -> String;
+    async fn invoke(&self, method_sign: &str, args: Vec<String>) -> String;
 }
 
 // ====================provider相关实现====================
@@ -31,31 +32,35 @@ lazy_static! {
     static ref PROVIDERS: Mutex<HashMap<String, Box<dyn RpcService>>> = Mutex::new(HashMap::new());
 }
 
-/*pub fn get_service(name: &String) -> Option<&dyn RpcService> {
-    let map = PROVIDERS.lock().unwrap();
-    map.get(name).map(|service| service.as_ref())
-}*/
-
 pub fn add_service(name: &str, service: Box<dyn RpcService>) {
     let mut map = PROVIDERS.lock().unwrap();
     map.insert(name.to_string(), service);
 }
 
-pub fn invoke_service(req: &RpcRequest) -> RpcResponse<String> {
+pub async fn invoke_service(req: &RpcRequest) -> RpcResponse<String> {
     let request = req.clone();
-    let name = &req.service;
-    let method_sign = &req.method_sign;
+    let name = request.service;
+    let method_sign = request.method_sign;
     let param = request.args;
+
+    // 执行方法
     let map = PROVIDERS.lock().unwrap();
-    let result = map.get(name).map(|service| service.invoke(method_sign, param)).unwrap();
-
-    // let server = get_service(service).unwrap();
-    // let result = server.invoke(method_sign, param);
-
-    RpcResponse {
-        code: 0,
-        msg: String::from("success"),
-        data: result,
+    let service = map.get(&name);
+    if let Some(service) = service {
+        let result_future = service.invoke(&method_sign, param);
+        match result_future.await {
+            result => RpcResponse {
+                code: 0,
+                msg: String::from("success"),
+                data: result,
+            },
+        }
+    } else {
+        RpcResponse {
+            code: 1,
+            msg: String::from("Service not found"),
+            data: String::new(),
+        }
     }
 }
 

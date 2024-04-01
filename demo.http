@@ -1,12 +1,12 @@
 ### 访问demo
-POST http://localhost:8080/
+POST http://localhost:8888/
 Content-Type: application/json
 
 {
   "service": "DemoServiceImpl",
   "method_sign": "hello",
-  "args": "aaa"
+  "args": ["\"bbb\""]
 }
 
 ### 访问demo
-GET http://localhost:7777/hello/syx
+GET http://localhost:7777/hello/abc

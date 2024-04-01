@@ -12,7 +12,8 @@ mod provider;
 
 #[post("/")]
 async fn invoker(req: web::Json<RpcRequest>) -> actix_web::Result<web::Json<RpcResponse<String>>> {
-    let response = invoke_service(&req);
+    println!("provider接收到的请求: {:?}", req.0);
+    let response = invoke_service(&req).await;
     Ok::<web::Json<RpcResponse<String>>, actix_web::Error>(web::Json(response))
 }
 
