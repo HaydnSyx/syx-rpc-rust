@@ -1,4 +1,4 @@
-### 访问demo
+### 访问provider-demo
 POST http://localhost:8888/
 Content-Type: application/json
 
@@ -8,5 +8,24 @@ Content-Type: application/json
   "args": ["\"bbb\""]
 }
 
-### 访问demo
+### 访问provider-demo
+POST http://localhost:8888/
+Content-Type: application/json
+
+{
+  "service": "DemoServiceImpl",
+  "method_sign": "add",
+  "args": ["1", "10"]
+}
+
+### 访问consumer-demo
 GET http://localhost:7777/hello/abc
+
+### 访问consumer-demo
+GET http://localhost:7777/add/1/5
+
+### 访问consumer-demo
+GET http://localhost:7777/find_user/55
+
+### 访问consumer-demo
+GET http://localhost:7777/get_age

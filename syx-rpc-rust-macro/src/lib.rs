@@ -55,7 +55,7 @@ pub fn syx_provider(_attr: TokenStream, item: TokenStream) -> TokenStream {
         if let ImplItem::Fn(method) = item {
             let ident = &method.sig.ident;
             let method_name = ident.to_string();
-
+            // 解析每一个入参（json反序列化）
             let mut req_pat = vec![];
             let req = method.sig.inputs.iter().fold(vec![], |mut vec, e| {
                 if let FnArg::Typed(input) = e {
@@ -71,20 +71,20 @@ pub fn syx_provider(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 vec
             },
             );
-
+            // 构建方法跳转
             Some(quote! {
-                let mut idx = 0;
-                #(
-                    #req
-                )*
-
                 if method_sign == #method_name {
+                    let mut idx = 0;
+                    #(
+                        #req
+                    )*
+
                     let re = self.#ident(
                         #(
                             #req_pat,
                         )*
                     ).await;
-                    return re;
+                    return serde_json::to_string(&re).unwrap();
                 }
             })
         } else {
@@ -93,8 +93,10 @@ pub fn syx_provider(_attr: TokenStream, item: TokenStream) -> TokenStream {
     });
 
     let gen = quote! {
+        // 原始方法实现
         #original_impl
 
+        // 调用原始方法入口
         #[async_trait::async_trait]
         impl RpcService for #struct_name {
             async fn invoke(&self, method_sign: &str, args: Vec<String>) -> String {
@@ -108,9 +110,8 @@ pub fn syx_provider(_attr: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn rpc_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn syx_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemTrait);
-
     // 解析参数
     let mut map = HashMap::new();
     let attr = attr.clone().to_string();
@@ -167,9 +168,12 @@ pub fn rpc_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
                         args: req_vec,
                     };
                     // 远端结果
-                    let res :String = syx_rpc_rust_core::invoke_provider(&request).await;
-                    let response: syx_rpc_rust_core::RpcResponse<#return_type> = serde_json::from_str(&res).unwrap();
-                    response.data
+                    let res :String = syx_rpc_rust_core::invoke_provider(&request, self.config).await;
+                    // 反序列化为response
+                    let response: syx_rpc_rust_core::RpcResponse = serde_json::from_str(&res).unwrap();
+                    // 反序列化为对应的data
+                    let data :#return_type = serde_json::from_str(&response.data).unwrap();
+                    return data;
                 }
             };
         fn_quote.push(proxy_fn);
@@ -179,11 +183,17 @@ pub fn rpc_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
         #item_trait
 
         pub struct #rpc_client {
+            config: &'static syx_rpc_rust_core::RpcConsumerClientConfig,
         }
+
         impl #rpc_client {
-        #(
-            #fn_quote
-        )*
+             pub fn new(config : &'static syx_rpc_rust_core::RpcConsumerClientConfig) -> #rpc_client {
+                #rpc_client {config}
+            }
+
+            #(
+                #fn_quote
+            )*
        }
 
     };
@@ -197,8 +207,15 @@ fn get_item_trait(item: ItemTrait) -> proc_macro2::TokenStream {
             let asyncable = &item_fn.sig.asyncness;
             let ident = &item_fn.sig.ident;
             let inputs = &item_fn.sig.inputs;
+
+            let return_type = if let ReturnType::Type(_, ty) = &item_fn.sig.output {
+                quote!(#ty)
+            } else {
+                quote!()
+            };
+
             vec.push(quote!(
-               #asyncable fn #ident (#inputs) -> String;
+               #asyncable fn #ident (#inputs) -> #return_type;
             ));
         }
         vec

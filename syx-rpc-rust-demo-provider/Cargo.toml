@@ -7,10 +7,9 @@ license.workspace = true
 description.workspace = true
 
 [dependencies]
-syx-rpc-rust-core.workspace = true
-syx-rpc-rust-macro.workspace = true
-syx-rpc-rust-demo-api.workspace = true
-
+syx-rpc-rust-core = {path = "../syx-rpc-rust-core", version = "1.0.0"}
+syx-rpc-rust-macro = {path = "../syx-rpc-rust-macro", version = "1.0.0"}
+syx-rpc-rust-demo-api = {path = "../syx-rpc-rust-demo-api", version = "1.0.0"}
 actix-web = "4.5.1"
 async-trait = "0.1.79"
 serde_json = "1.0.114"
